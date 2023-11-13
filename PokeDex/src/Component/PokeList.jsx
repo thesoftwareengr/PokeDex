@@ -2,40 +2,51 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const PokeList = () => {
-  const [pokemonData, setPokemonData] = useState(null);
-  const [pokemonName, setPokemonName] = useState('pikachu'); // Default Pokémon
+  const [pokedexData, setPokedexData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${searchQuery.toLowerCase()}`);
+      setPokedexData([response.data]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-        setPokemonData(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchData();
-  }, [pokemonName]);
+  }, [searchQuery]);
 
   return (
     <div>
-      <h1>Welcome to PokeDex</h1>
-      <label htmlFor="pokemonName">Enter Pokemon Name:</label>
+      <h1>Pokédex</h1>
+      <label htmlFor="searchInput">Search Pokemon:</label>
       <input
         type="text"
-        id="pokemonName"
-        value={pokemonName}
-        onChange={(e) => setPokemonName(e.target.value.toLowerCase())}
+        id="searchInput"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
       />
-      {pokemonData && (
-        <div>
-          <h2>{pokemonData.name}</h2>
-          <img src={pokemonData.sprites.front_default} alt={`${pokemonData.name}`} />
-          <p>Height: {pokemonData.height}</p>
-          <p>Weight: {pokemonData.weight}</p>
-        </div>
-      )}
+      <button onClick={fetchData} disabled={isLoading}>
+        Search
+      </button>
+      {isLoading && <p>Loading...</p>}
+      {pokedexData.map((pokemon) => (
+  <div key={pokemon.id}>
+    <h2>{pokemon.name}</h2>
+    {pokemon.sprites && (
+      <img src={pokemon.sprites.front_default} alt={pokemon.name} />
+    )}
+    <p>Height: {pokemon.height}</p>
+    <p>Weight: {pokemon.weight}</p>
+  </div>
+))}
     </div>
   );
 };
