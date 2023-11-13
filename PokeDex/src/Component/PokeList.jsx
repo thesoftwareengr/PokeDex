@@ -6,7 +6,7 @@ const PokeList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchData = async () => {
+  const fetchDataOne = async () => {
     try {
       setIsLoading(true);
 
@@ -19,8 +19,22 @@ const PokeList = () => {
     }
   };
 
+  
+  const fetchDataAll = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/?limit=20&offset=20`);
+      setPokedexData([response.data]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchData();
+    searchQuery? fetchDataAll : fetchDataOne;
   }, [searchQuery]);
 
   return (
@@ -33,7 +47,7 @@ const PokeList = () => {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      <button onClick={fetchData} disabled={isLoading}>
+      <button onClick={fetchDataOne} disabled={isLoading}>
         Search
       </button>
       {isLoading && <p>Loading...</p>}
